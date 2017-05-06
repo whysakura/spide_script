@@ -1,0 +1,8 @@
+
+beautifulsoup4==4.5.3
+lxml==3.6.0
+PyMySQL==0.7.3
+redis==2.10.5
+requests==2.10.0
+tornado==4.5
+supervisor (3.3.1)
