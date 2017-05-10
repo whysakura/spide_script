@@ -13,7 +13,7 @@ import pymysql
 from tornado import (httpclient, gen, ioloop, queues)
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
-from spide_util import Spide, MyPyMysql
+from spide_util import Spide, MyPyMysql, timestamptotime
 
 logging_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'baidu.log')
 base_uk = 2164327417
@@ -144,12 +144,13 @@ def getsharelist(current_uk, start, limit):
                         i['uk'],
                         i['username'].encode("utf-8"),
                         j['size'],
+                        timestamptotime(i['feed_time']/1000)
                     ])
         len_insert_data = len(records)
         # print len_insert_data,insert_data
         con = MyPyMysql(**mysql_config)
         if insert_data:
-            sql = """ replace into pt_db.spide_shares (fs_id,category,base_url,share_url,`public`,server_filename,uk,username,`size`) values %s """
+            sql = """ replace into pt_db.spide_shares (fs_id,category,base_url,share_url,`public`,server_filename,uk,username,`size`,share_time) values %s """
             con.insert_query(sql, insert_data)
         # 记录查询的这个人现在分享到多少了
         sql = """ insert into pt_db.spide_all_person_log (uk,share_nums) values (%s,%s) ON DUPLICATE KEY UPDATE share_nums=share_nums+%s , m_time = %s;"""

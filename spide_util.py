@@ -3,6 +3,7 @@
 import logging
 
 import pymysql
+import time
 from tornado import gen
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
@@ -69,6 +70,13 @@ class MyPyMysql(object):
     def close_connect(self):
         self.connection.close()
 
+def timestamptotime(num):
+    """
+    时间戳转时间
+    :param num:
+    :return:
+    """
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(num))
 
 if __name__=="__main__":
     data = MyPyMysql.sql_splice([['1','2','3'],['a','b','c']])
