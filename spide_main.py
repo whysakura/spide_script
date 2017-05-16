@@ -42,6 +42,15 @@ http_config = {
     # "proxy_host":'http://124.251.42.254',
     # "proxy_port": 3128
 }
+mysql_config = {
+    'host': '120.26.214.19',
+    'port': 3306,
+    'user': 'root',
+    'password': 'putao1234',
+    'db': 'pt_db',
+    'charset': 'utf8',
+    'cursorclass': pymysql.cursors.DictCursor
+}
 
 fetched, fetching, sharing = set(), set(), set()
 proxy_ip_set = set()  #  代理ip集合 用于去队列重复,增量插入到队列中
