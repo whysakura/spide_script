@@ -20,6 +20,7 @@ def insert_proxies(proxies_list):
     con = MyPyMysql(**mysql_config)
     sql = """ replace into pt_db.spide_proxies_ip (proxy_host,proxy_port,address) values %s """
     con.insert_query(sql, proxies_list)
+    mylog.info('insert :' + sql+str(proxies_list))
     con.close_connect()
 
 def delete_proxies(proxies_list):
@@ -53,6 +54,8 @@ class AsySpider(object):
         for _ in range(10):
             try:
                 if self.r.llen('proxy_check_ip_list') == 0:
+                    insert_proxies(insert_lists)
+                    insert_lists = []
                     mylog.info('proxy_ip_list队列无值,等待添加中....')
                 i = json.loads(self.r.blpop("proxy_check_ip_list", timeout=0)[1])
                 httpconfigs = get_ip_http_config()
