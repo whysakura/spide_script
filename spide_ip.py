@@ -21,7 +21,7 @@ def put_ip():
     sql = """SELECT proxy_host,proxy_port FROM pt_db.spide_proxies_ip;"""
     result = pmysql.query(sql)
     for i in result:
-        yield r.rpush("proxy_ip_list", json.dumps(i))
+        r.rpush("proxy_ip_list", json.dumps(i))
     mylog.info('向proxy_ip_list加数据')
     pmysql.close_connect()
     if not result or result is None:
