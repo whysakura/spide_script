@@ -50,8 +50,8 @@ class AsySpider(object):
         :return:
         """
         insert_lists = []
-        rlist = self.r.lrange("proxy_check_ip_list", 0, -1)
         for _ in range(10):
+            rlist = self.r.lrange("proxy_check_ip_list", 0, -1)
             try:
                 if self.r.llen('proxy_check_ip_list') == 0:
                     insert_proxies(insert_lists)
