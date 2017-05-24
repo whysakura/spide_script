@@ -17,9 +17,8 @@ mylog = Logger(chkip_logging_filename)
 def insert_proxies(proxies_list):
     if not proxies_list:
         return
-    proxies_list = [proxies_list]
     con = MyPyMysql(**mysql_config)
-    sql = """ replace into pt_db.spide_proxies_ip (proxy_host,proxy_port,address) values %s """
+    sql = """ replace into pt_db.spide_proxies_ip (proxy_host,proxy_port) values %s """
     con.insert_query(sql, proxies_list)
     mylog.info('insert :' + sql+str(proxies_list))
     con.close_connect()
@@ -60,15 +59,15 @@ class AsySpider(object):
                     mylog.info('proxy_ip_list队列无值,等待添加中....')
                 i = json.loads(self.r.blpop("proxy_check_ip_list", timeout=0)[1])
                 httpconfigs = get_ip_http_config()
-                # httpconfigs['proxy_host'] = i['proxy_host']
-                # httpconfigs['proxy_port'] = int(i['proxy_port'])
-                # yield Spide(self.url, **httpconfigs).async_proxy()
+                httpconfigs['proxy_host'] = i['proxy_host']
+                httpconfigs['proxy_port'] = int(i['proxy_port'])
+                yield Spide(self.url, **httpconfigs).async_proxy()
                 # yield Spide(self.url, **httpconfigs).async()
             except Exception as e:
                 mylog.error(str(e))
                 mylog.error('无法连接... ' + str(len(rlist)) + ' ' + str(i['proxy_host']))
             else:
-                insert_lists.append(i['proxy_host'])
+                insert_lists.append([i['proxy_host'],int(i['proxy_port'])])
                 mylog.info('连接成功...' + str(len(rlist)) + ' ' + str(i['proxy_host']))
         insert_proxies(insert_lists)
 
