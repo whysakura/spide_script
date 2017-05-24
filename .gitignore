@@ -92,3 +92,4 @@ ENV/
 .idea
 baidu.log
 spide_ip.log
+*.log

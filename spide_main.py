@@ -8,49 +8,12 @@ import logging
 import time
 from random import choice
 from datetime import timedelta
-
+from setting import *
 import pymysql
 from tornado import (httpclient, gen, ioloop, queues)
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
-from spide_util import Spide, MyPyMysql, timestamptotime
-
-logging_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'baidu.log')
-base_uk = 2164327417
-consume_sleeptime = 0
-product_sleeptime = 5
-maxsize = 3000
-share_url = 'http://pan.baidu.com/pcloud/feed/getsharelist?auth_type={0}&start={1}&limit={2}&query_uk={3}'
-follow_url = 'http://pan.baidu.com/pcloud/friend/getfollowlist?start={0}&limit={1}&query_uk={2}'
-fan_url = 'http://pan.baidu.com/pcloud/friend/getfanslist?start={0}&limit={1}&query_uk={2}'
-# share_url_bak = 'http://pan.baidu.com/pcloud/feed/getsharelist?auth_type=1&query_uk=2164327417&limit=60&start=0'
-# follow_url_bak = 'http://pan.baidu.com/pcloud/friend/getfollowlist?query_uk=2164327417&limit=24&start=0'
-# fan_url_bak = 'http://pan.baidu.com/pcloud/friend/getfanslist?query_uk=2164327417&limit=24&start=0'
-
-http_config = {
-    "headers": {
-        'accept': "application/json, text/javascript, */*; q=0.01",
-        'accept-encoding': "gzip, deflate, sdch",
-        'accept-language': "zh-CN,zh;q=0.8",
-        'connection': "keep-alive",
-        'host': "pan.baidu.com",
-        'referer': "http://pan.baidu.com/share/home?uk=2084488645&third=1&view=share",
-        'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        'x-requested-with': "XMLHttpRequest",
-        'cache-control': "no-cache",
-    },
-    # "proxy_host":'http://124.251.42.254',
-    # "proxy_port": 3128
-}
-mysql_config = {
-    'host': '120.26.214.19',
-    'port': 3306,
-    'user': 'root',
-    'password': 'putao1234',
-    'db': 'pt_db',
-    'charset': 'utf8',
-    'cursorclass': pymysql.cursors.DictCursor
-}
+from spide_util import Spide, MyPyMysql, timestamptotime, Logger
 
 fetched, fetching, sharing = set(), set(), set()
 proxy_ip_set = set()  #  代理ip集合 用于去队列重复,增量插入到队列中
@@ -69,7 +32,7 @@ def put_ip():
             proxy_ip_set.add(i['proxy_host'])
             proxy_ip_queue.put(i)
     pmysql.close_connect()
-    if not result:
+    if not result or result is None:
         os._exit(0)
 
 def get_all_person(uk):
@@ -99,19 +62,20 @@ def get_spide(url):
     for _ in range(proxy_ip_queue.qsize()+1):
         if proxy_ip_queue.empty():
             proxy_ip_set.clear()
-            logging.info('清空 proxy_ip_set')
+            mylog.info('清空 proxy_ip_set')
             put_ip()
         try:
             j = proxy_ip_queue.get()
             i = j.result()
-            http_config['proxy_host'] = i['proxy_host']
-            http_config['proxy_port'] = i['proxy_port']
-            response = yield Spide(url, **http_config).async_proxy()
+            httpconfigs = get_http_config()
+            httpconfigs['proxy_host'] = i['proxy_host']
+            httpconfigs['proxy_port'] = i['proxy_port']
+            response = yield Spide(url, **httpconfigs).async_proxy()
         except Exception as e:
-            logging.info(e)
-            logging.error('无法连接... ' + str(proxy_ip_queue.qsize()) + ' ' + str(i['proxy_host']))
+            mylog.info(e)
+            mylog.error('无法连接... ' + str(proxy_ip_queue.qsize()) + ' ' + str(i['proxy_host']))
         else:
-            logging.info('连接成功...' + str(proxy_ip_queue.qsize()) + ' ' + str(i['proxy_host']))
+            mylog.info('连接成功...' + str(proxy_ip_queue.qsize()) + ' ' + str(i['proxy_host']))
             raise gen.Return(response)
 
 
@@ -156,10 +120,10 @@ def getsharelist(current_uk, start, limit):
         sql = """ insert into pt_db.spide_all_person_log (uk,share_nums) values (%s,%s) ON DUPLICATE KEY UPDATE share_nums=share_nums+%s , m_time = %s;"""
         con.query(sql, (current_uk, len_insert_data, len_insert_data, now_time))
         con.close_connect()
-        logging.info('sharelist 成功: ' + url)
+        mylog.info('sharelist 成功: ' + url)
     except Exception as e:
-        logging.error('sharelist 失败: ' + str(url))
-        logging.error(e)
+        mylog.error('sharelist 失败: ' + str(url))
+        mylog.error(e)
         raise gen.Return([])
     raise gen.Return([])
 
@@ -171,7 +135,7 @@ def getfanlist(current_uk):
         limit = 24
         query_uk = current_uk
         url = fan_url.format(start, limit, query_uk)
-        logging.info('fans: ' + url)
+        mylog.info('fans: ' + url)
         print('fetching %s' % url)
         response = yield get_spide(url)
         list_data = json.loads(response.body)
@@ -186,8 +150,8 @@ def getfanlist(current_uk):
                 continue
             uks.append(i['fans_uk'])
     except Exception as e:
-        logging.error('fanlist error: ' + str(url) + e.message)
-        logging.error(e)
+        mylog.error('fanlist error: ' + str(url) + e.message)
+        mylog.error(e)
         raise gen.Return([])
     raise gen.Return(uks)
 
@@ -198,7 +162,7 @@ def getfollowlist(current_uk):
     def followquery(current_uk, start, limit):
         query_uk = current_uk
         url = follow_url.format(start, limit, query_uk)
-        logging.info('follow: ' + url)
+        mylog.info('follow: ' + url)
         response = yield get_spide(url)
         list_data = json.loads(response.body)
         if list_data['errno'] != 0:
@@ -245,8 +209,8 @@ def getfollowlist(current_uk):
         uks = [i['uk'] for i in query_uk]
         con.close_connect()
     except Exception as e:
-        logging.error('followlist 失败: ' + str(url))
-        logging.error(e)
+        mylog.error('followlist 失败: ' + str(url))
+        mylog.error(e)
         raise gen.Return([])
     raise gen.Return(uks)
 
@@ -259,7 +223,7 @@ def main():
         try:
             if current_uk in fetching:
                 raise gen.Return('current_uk is having in fetching')
-            logging.info('生产队列:{0},fetching:{1},fetched:{2},sharing:{3}'.format(q.qsize(), len(fetching), len(fetched),
+            mylog.info('生产队列:{0},fetching:{1},fetched:{2},sharing:{3}'.format(q.qsize(), len(fetching), len(fetched),
                                                                                 len(sharing)))
 
             fetching.add(current_uk)
@@ -278,7 +242,7 @@ def main():
                     yield share_data.put(uk)
             yield gen.sleep(product_sleeptime)
         except Exception as e:
-            logging.error(e.message)
+            mylog.error(e.message)
         finally:
             q.task_done()
 
@@ -293,7 +257,7 @@ def main():
     def consumer():
         while True:
             try:
-                logging.info(
+                mylog.info(
                     '消费队列:{0},fetching:{1},fetched:{2},sharing:{3}'.format(share_data.qsize(), len(fetching),
                                                                            len(fetched),
                                                                            len(sharing)))
@@ -310,7 +274,7 @@ def main():
                         yield getsharelist(current_uk, starts, limit)
 
             except Exception as e:
-                logging.error(e)
+                mylog.error(e)
 
             finally:
                 share_data.task_done()
@@ -331,10 +295,8 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename=logging_filename, level=logging.INFO, datefmt='%Y:%m:%d %H:%M:%S',
-                        format='%(asctime)s:%(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
-
-    logging.info('爬虫开始....')
+    mylog = Logger(ip_logging_filename)
+    mylog.info('爬虫开始....')
     con = MyPyMysql(**mysql_config)
     sql = """ insert into pt_db.spide_all_person_log (uk,follow_nums,fan_nums,share_nums) values (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE follow_nums=follow_nums , m_time = %s;"""
     con.query(sql, [2164327417, 0, 0, 0,now_time])
