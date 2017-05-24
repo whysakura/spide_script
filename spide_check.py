@@ -57,7 +57,7 @@ class AsySpider(object):
                 i = json.loads(self.r.blpop("proxy_check_ip_list", timeout=0)[1])
                 httpconfigs = get_ip_http_config()
                 httpconfigs['proxy_host'] = i['proxy_host']
-                httpconfigs['proxy_port'] = i['proxy_port']
+                httpconfigs['proxy_port'] = int(i['proxy_port'])
                 yield Spide(self.url, **httpconfigs).async_proxy()
                 # yield Spide(self.url, **httpconfigs).async()
             except Exception as e:
