@@ -61,9 +61,9 @@ second_url = 'http://www.coobobo.com/free-http-proxy/'
 third_url = 'http://www.httpdaili.com/mfdl/'
 ip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'ips.log')
 chkip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'check_ips.log')
-page_num = 4 # 取10页
-sleep_tims = 300 # 睡眠100s
-check_process = 4
+page_num = 5 # 取5页
+sleep_tims = 300 # 睡眠300s
+check_process = 3
 ip_http_config = {
     "headers": {
         'accept': "application/json, text/javascript, */*; q=0.01",
