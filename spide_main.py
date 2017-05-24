@@ -295,7 +295,7 @@ def main():
 
 
 if __name__ == '__main__':
-    mylog = Logger(ip_logging_filename)
+    mylog = Logger(main_logging_filename)
     mylog.info('爬虫开始....')
     con = MyPyMysql(**mysql_config)
     sql = """ insert into pt_db.spide_all_person_log (uk,follow_nums,fan_nums,share_nums) values (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE follow_nums=follow_nums , m_time = %s;"""
