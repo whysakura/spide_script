@@ -61,7 +61,6 @@ def get_spide(url,if_proxy=False):
             response = yield Spide(url, **httpconfigs).async_proxy()
             # response = yield Spide(url, **httpconfigs).async()
         except Exception as e:
-            delete_list.append(i['proxy_host'])
             mylog.error(str(e))
             mylog.error('无法连接... ' + str(len(rlist)) + ' ' + str(i['proxy_host']))
         else:
@@ -88,7 +87,7 @@ def get_first_proxy_data(page_n=page_num,if_proxy=False):
                     }
                     r.rpush("proxy_check_ip_list", json.dumps(proxies_list))
                 mylog.info(urls)
-            yield gen.sleep(sleep_tims+50)
+            yield gen.sleep(sleep_tims)
         except Exception as e:
             mylog.error(e.message)
         finally:

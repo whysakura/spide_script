@@ -62,8 +62,8 @@ third_url = 'http://www.httpdaili.com/mfdl/'
 ip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'ips.log')
 chkip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'check_ips.log')
 page_num = 10 # 取10页
-sleep_tims = 10 # 睡眠10s
-check_process = 3
+sleep_tims = 100 # 睡眠100s
+check_process = 4
 ip_http_config = {
     "headers": {
         'accept': "application/json, text/javascript, */*; q=0.01",
