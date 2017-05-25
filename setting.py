@@ -81,3 +81,6 @@ ip_http_config = {
 
 def get_ip_http_config():
     return ip_http_config
+
+
+sql_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'query_sql.log')

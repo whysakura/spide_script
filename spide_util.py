@@ -11,7 +11,7 @@ from tornado import gen
 from tornado.curl_httpclient import CurlAsyncHTTPClient
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 
-from setting import redis_conf, mysql_config, get_ip_http_config
+from setting import redis_conf, mysql_config, get_ip_http_config, sql_logging_filename
 
 
 class Spide(object):
@@ -30,26 +30,61 @@ class Spide(object):
         response = yield http_c.fetch(self.request, **kwargs)
         raise gen.Return(response)
 
+class Logger(logging.Logger):
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls,'_inst'):
+            cls._inst = super(Logger,cls).__new__(cls,*args,**kwargs)
+        return cls._inst
+
+    def __init__(self, filename=None):
+        super(Logger, self).__init__(self)
+        # 日志文件名
+        if filename is None:
+            filename = 'test.log'
+        self.filename = filename
+
+        # 创建一个handler，用于写入日志文件 (每天生成1个，保留30天的日志)
+        fh = logging.handlers.TimedRotatingFileHandler(self.filename, 'D', 1, 0)
+        fh.suffix = "%Y%m%d.log"
+        fh.setLevel(logging.DEBUG)
+
+        # 再创建一个handler，用于输出到控制台
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+
+        # 定义handler的输出格式
+        formatter = logging.Formatter('%(asctime)s:%(filename)s[Line:%(lineno)d][thread:%(thread)s][process:%(process)s] %(levelname)s %(message)s',datefmt='%Y:%m:%d %H:%M:%S')
+        fh.setFormatter(formatter)
+        #ch.setFormatter(formatter)
+
+        # 给logger添加handler
+        self.addHandler(fh)
+        self.addHandler(ch)
+
+
+mylog = Logger(sql_logging_filename)
 
 class MyPyMysql(object):
     def __init__(self,**kwargs):
         try:
             self.connection = pymysql.connect(**kwargs)
         except Exception as e:
-            logging.error('数据库连接失败...')
-            logging.error(e)
+            mylog.error('数据库连接失败...')
+            mylog.error(e)
 
     def query(self,sql,data=None):
         data = [] if data is None else data
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(sql,data)
+                mylog.info(cursor._last_executed)
                 self.connection.commit()
                 result = cursor.fetchall()
                 return result
         except Exception as e:
             self.connection.rollback()
-            logging.error('回滚: '+sql+str(data))
+            mylog.error('回滚: '+sql+str(data))
+            mylog.error(e)
 
     @staticmethod
     def sql_splice(data):
@@ -96,36 +131,6 @@ class RedisPool(object):
         rd = redis.Redis(connection_pool=self.pool)
         return rd
 
-class Logger(logging.Logger):
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls,'_inst'):
-            cls._inst = super(Logger,cls).__new__(cls,*args,**kwargs)
-        return cls._inst
-
-    def __init__(self, filename=None):
-        super(Logger, self).__init__(self)
-        # 日志文件名
-        if filename is None:
-            filename = 'test.log'
-        self.filename = filename
-
-        # 创建一个handler，用于写入日志文件 (每天生成1个，保留30天的日志)
-        fh = logging.handlers.TimedRotatingFileHandler(self.filename, 'D', 1, 0)
-        fh.suffix = "%Y%m%d.log"
-        fh.setLevel(logging.DEBUG)
-
-        # 再创建一个handler，用于输出到控制台
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-
-        # 定义handler的输出格式
-        formatter = logging.Formatter('%(asctime)s:%(filename)s[Line:%(lineno)d][thread:%(thread)s][process:%(process)s] %(levelname)s %(message)s',datefmt='%Y:%m:%d %H:%M:%S')
-        fh.setFormatter(formatter)
-        #ch.setFormatter(formatter)
-
-        # 给logger添加handler
-        self.addHandler(fh)
-        self.addHandler(ch)
 
 
 if __name__=="__main__":
