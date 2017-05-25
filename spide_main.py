@@ -114,7 +114,7 @@ def getsharelist(current_uk, start, limit):
         # print len_insert_data,insert_data
         con = MyPyMysql(**mysql_config)
         if insert_data:
-            sql = """ replace into pt_db.spide_shares (fs_id,category,base_url,share_url,`public`,server_filename,uk,username,`size`,share_time) values %s """
+            sql = """ insert ignore into pt_db.spide_shares (fs_id,category,base_url,share_url,`public`,server_filename,uk,username,`size`,share_time) values %s """
             con.insert_query(sql, insert_data)
         # 记录查询的这个人现在分享到多少了
         sql = """ insert into pt_db.spide_all_person_log (uk,share_nums) values (%s,%s) ON DUPLICATE KEY UPDATE share_nums=share_nums+%s , m_time = %s;"""
