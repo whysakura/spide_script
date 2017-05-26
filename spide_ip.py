@@ -61,13 +61,14 @@ def get_spide(url,if_proxy=False):
             response = yield Spide(url, **httpconfigs).async_proxy()
             # response = yield Spide(url, **httpconfigs).async()
         except Exception as e:
+            delete_list.append(i['proxy_host'])
             mylog.error(str(e))
             mylog.error('无法连接... ' + str(len(rlist)) + ' ' + str(i['proxy_host']))
         else:
             mylog.info('连接成功...' + str(len(rlist)) + ' ' + str(i['proxy_host']))
             delete_proxies(delete_list)
             raise gen.Return(response)
-    delete_list.append(i['proxy_host'])
+    delete_proxies(delete_list)
 
 
 @gen.coroutine

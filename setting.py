@@ -17,6 +17,9 @@ fan_url = 'http://pan.baidu.com/pcloud/friend/getfanslist?start={0}&limit={1}&qu
 # follow_url_bak = 'http://pan.baidu.com/pcloud/friend/getfollowlist?query_uk=2164327417&limit=24&start=0'
 # fan_url_bak = 'http://pan.baidu.com/pcloud/friend/getfanslist?query_uk=2164327417&limit=24&start=0'
 
+producer_process = 1
+
+
 http_config = {
     "headers": {
         'accept': "application/json, text/javascript, */*; q=0.01",
