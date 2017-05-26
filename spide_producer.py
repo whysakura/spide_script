@@ -37,6 +37,7 @@ from spide_util import Spide, MyPyMysql, Logger, RedisPool
 
 
 
+
 class SpProducer(object):
     def __init__(self):
         self.now_time = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -56,11 +57,12 @@ class SpProducer(object):
             response = yield self.get_spide(url)
             list_data = json.loads(response.body)
             if list_data['errno'] != 0:
+                mylog.info(response.body)
                 yield followquery(current_uk, start, limit)
-                raise gen.Return(response.body)
-            total_count = list_data['total_count']
-            follow_list = list_data['follow_list']
-            raise gen.Return([total_count, follow_list])
+            else:
+                total_count = list_data['total_count']
+                follow_list = list_data['follow_list']
+                raise gen.Return([total_count, follow_list])
 
         try:
             start = 0
@@ -105,8 +107,8 @@ class SpProducer(object):
         获取 能用的代理连接
         :return:
         """
-        rlist = self.r.lrange("proxy_ip_list", 0, -1)
         for _ in range(10):
+            rlist = self.r.lrange("proxy_ip_list", 0, -1)
             try:
                 if self.r.llen('proxy_ip_list') == 0:
                     mylog.info('proxy_ip_list队列无值,等待添加中....')
@@ -124,10 +126,22 @@ class SpProducer(object):
                 raise gen.Return(response)
 
     @gen.coroutine
+    def put_ip(self):
+        # 向队列里面添加数据
+        sql = """SELECT uk FROM pt_db.spide_all_person p where follow_nums != 0 order by rand() desc ;"""
+        result = self.con.query(sql)
+        for i in result:
+            self.r.rpush("follow_list", str(i))
+        mylog.info('向follow_list加数据')
+        if not result or result is None:
+            mylog.info('spide_all_person无数据...')
+
+    @gen.coroutine
     def fetch_url(self):
         if self.r.llen('follow_list') == 0:
             mylog.info('follow_list队列无值,等待添加中....')
-        current_uk = self.r.blpop("follow_list", timeout=0)
+            self.put_ip()
+        current_uk = self.r.blpop("follow_list", timeout=0)[1]
         try:
             mylog.info('生产队列:follow_list:{0},followed_set:{1}'.format(self.r.llen('follow_list'), self.r.scard('followed_set')))
             follow_uks = yield self.getfollowlist(current_uk)
@@ -156,6 +170,6 @@ def main():
 
 
 if __name__ == '__main__':
-    mylog = Logger(main_logging_filename)
+    mylog = Logger(producer_logging_filename)
     mylog.info('爬虫开始....')
     main()

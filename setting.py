@@ -18,6 +18,7 @@ fan_url = 'http://pan.baidu.com/pcloud/friend/getfanslist?start={0}&limit={1}&qu
 # fan_url_bak = 'http://pan.baidu.com/pcloud/friend/getfanslist?query_uk=2164327417&limit=24&start=0'
 
 producer_process = 1
+producer_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'producer.log')
 
 
 http_config = {
