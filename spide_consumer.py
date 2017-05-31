@@ -18,6 +18,20 @@ class SpProducer(object):
         self.r.rpush("share_list", str(base_uk))  # 初始化把base_url加入到队列中
         self.con = MyPyMysql(**mysql_config)
 
+    def add_most_person(self):
+        ntime = time.time()
+        last_time = self.r.get('if_add_time')
+        if not last_time:
+            self.r.set('if_add_time', str(ntime))
+        else:
+            if ntime - int(last_time) > 86400:
+                self.r.set('if_add_time', str(ntime))
+                # 向队列里面添加数据
+                sql = """SELECT uk FROM pt_db.spide_all_person p where p.share_nums !=0 order by share_nums desc limit 100; """
+                result = self.con.query(sql)
+                for i in result:
+                    self.r.rpush("share_list", str(i['uk']))
+                mylog.info('向share_list添加前分享前100数据')
 
     @gen.coroutine
     def getsharelist(self,current_uk, start, limit):
@@ -55,7 +69,7 @@ class SpProducer(object):
                     self.con.insert_query(sql, insert_data)
                 # 记录查询的这个人现在分享到多少了
                 sql = """ insert into pt_db.spide_all_person_log (uk,share_nums) values (%s,%s) ON DUPLICATE KEY UPDATE share_nums=share_nums+%s , m_time = %s;"""
-                self.con.query(sql, (current_uk, len_insert_data, len_insert_data, self.now_time))
+                self.con.query(sql, (current_uk, len_insert_data, len_insert_data, time.strftime('%Y-%m-%d %H:%M:%S')))
                 mylog.info('sharelist 成功: ' + url)
         except Exception as e:
             mylog.error('sharelist 失败: ' + str(url))
@@ -124,6 +138,7 @@ class SpProducer(object):
     def worker(self):
         while True:
             try:
+                self.add_most_person()
                 if self.r.llen('share_list') == 0:
                     mylog.info('share_list队列无值,等待添加中....')
                     self.put_share_list()

@@ -94,7 +94,7 @@ class SpProducer(object):
                 self.con.insert_query(sql, person_data)
             # 记录查询的这个人当前的关注人数
             sql = """ insert into pt_db.spide_all_person_log (uk,follow_nums) values (%s,%s) ON DUPLICATE KEY UPDATE follow_nums=%s , m_time = %s;"""
-            self.con.query(sql, (current_uk, total_count, total_count, self.now_time))
+            self.con.query(sql, (current_uk, total_count, total_count, time.strftime('%Y-%m-%d %H:%M:%S')))
         except Exception as e:
             mylog.error('followlist 失败: ' + str(url))
             mylog.error(e)
