@@ -18,7 +18,7 @@ from spide_main import mysql_config, redis_conf
 @gen.coroutine
 def put_ip():
     pmysql = MyPyMysql(**mysql_config)
-    sql = """SELECT proxy_host,proxy_port FROM pt_db.spide_proxies_ip;"""
+    sql = """SELECT proxy_host,proxy_port FROM pt_db.spide_proxies_ip order by rand();"""
     result = pmysql.query(sql)
     for i in result:
         r.rpush("proxy_ip_list", json.dumps(i))
@@ -35,8 +35,8 @@ def get_spide(url,if_proxy=False):
     获取 能用的代理连接
     :return:
     """
-    httpconfigs = get_ip_http_config()
     if if_proxy :
+        httpconfigs = get_ip_http_config()
         local_ip_nums = r.get('use_local_ip_get_data')
         if int(local_ip_nums) < 10:
             response = yield Spide(url, **httpconfigs).async()
@@ -54,7 +54,7 @@ def get_spide(url,if_proxy=False):
         try:
             if r.llen('proxy_ip_list') == 0:
                 yield put_ip()
-            i = json.loads(r.blpop("proxy_ip_list", timeout=0)[1])
+            i = json.loads(r.blpop("proxy_ip_list", timeout=200)[1])
             httpconfigs = get_ip_http_config()
             httpconfigs['proxy_host'] = i['proxy_host']
             httpconfigs['proxy_port'] = i['proxy_port']
@@ -66,9 +66,9 @@ def get_spide(url,if_proxy=False):
             mylog.error('无法连接... ' + str(len(rlist)) + ' ' + str(i['proxy_host']))
         else:
             mylog.info('连接成功...' + str(len(rlist)) + ' ' + str(i['proxy_host']))
-            delete_proxies(delete_list)
+            # delete_proxies(delete_list)
             raise gen.Return(response)
-    delete_proxies(delete_list)
+    # delete_proxies(delete_list)  # 获取可用ip比较慢,所以暂时不删除
 
 
 @gen.coroutine
