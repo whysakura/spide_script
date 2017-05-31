@@ -148,9 +148,11 @@ def main():
 
 
 if __name__ == '__main__':
-    time.sleep(random.randint(0, 30))
     mylog = Logger(consumer_logging_filename)
     mylog.info('获取分享数据开始....')
+    yanshi = random.randint(0, 30)
+    mylog.info(yanshi)
+    time.sleep(yanshi)
     p = Pool(consumer_process)
     for i in range(consumer_process):
         p.apply_async(main)
