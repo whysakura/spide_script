@@ -49,8 +49,8 @@ def get_spide(url,if_proxy=False):
             time.sleep(1200)
             r.decr('use_local_ip_get_data',2)
     delete_list = []
-    rlist = r.lrange("proxy_ip_list",0,-1)
     for _ in range(10):
+        rlist = r.lrange("proxy_ip_list",0,-1)
         try:
             if r.llen('proxy_ip_list') == 0:
                 yield put_ip()
