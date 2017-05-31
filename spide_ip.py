@@ -80,6 +80,7 @@ def get_first_proxy_data(page_n=page_num,if_proxy=False):
                 response = yield get_spide(urls,if_proxy=if_proxy)
                 soup = BeautifulSoup(response.body, 'lxml')
                 taglist = soup.find_all('tr', attrs={'class': re.compile("(odd)|()")})
+                mylog.info(taglist)
                 for trtag in taglist:
                     tdlist = trtag.find_all('td')  # 在每个tr标签下,查找所有的td标签
                     proxies_list = {
