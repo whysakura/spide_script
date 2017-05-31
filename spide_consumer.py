@@ -150,7 +150,7 @@ def main():
 if __name__ == '__main__':
     mylog = Logger(consumer_logging_filename)
     mylog.info('获取分享数据开始....')
-    yanshi = random.randint(0, 30)
+    yanshi = random.randint(0, 60)
     mylog.info(yanshi)
     time.sleep(yanshi)
     p = Pool(consumer_process)
