@@ -100,7 +100,7 @@ class SpProducer(object):
         sql = """SELECT uk FROM pt_db.spide_all_person p where p.share_nums !=0 order by share_nums desc; """
         result = self.con.query(sql)
         for i in result:
-            self.r.rpush("share_list", str(i))
+            self.r.rpush("share_list", str(i['uk']))
         mylog.info('向share_list加数据')
         if not result or result is None:
             mylog.info('share_list数据库无数据...')
@@ -127,7 +127,7 @@ class SpProducer(object):
                     mylog.info('share_list队列无值,等待添加中....')
                     self.put_share_list()
                 mylog.info('消费队列:share_list:{0}'.format(self.r.llen('share_list')))
-                current_uk = self.r.blpop("share_list", timeout=200)[1]
+                current_uk = (self.r.blpop("share_list", timeout=200)[1])
                 query_share_nums = self.get_all_person(current_uk)
                 limit = 60
                 if query_share_nums > 0:

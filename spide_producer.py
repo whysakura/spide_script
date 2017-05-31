@@ -112,7 +112,7 @@ class SpProducer(object):
             try:
                 if self.r.llen('proxy_ip_list') == 0:
                     mylog.info('proxy_ip_list队列无值,等待添加中....')
-                i = json.loads(self.r.blpop("proxy_ip_list", timeout=0)[1])
+                i = json.loads(self.r.blpop("proxy_ip_list", timeout=100)[1])
                 httpconfigs = get_http_config()
                 httpconfigs['proxy_host'] = i['proxy_host']
                 httpconfigs['proxy_port'] = i['proxy_port']
@@ -131,7 +131,7 @@ class SpProducer(object):
         sql = """SELECT uk FROM pt_db.spide_all_person p where follow_nums != 0 order by rand() desc ;"""
         result = self.con.query(sql)
         for i in result:
-            self.r.rpush("follow_list", str(i))
+            self.r.rpush("follow_list", str(i['uk']))
         mylog.info('向follow_list加数据')
         if not result or result is None:
             mylog.info('spide_all_person无数据...')
@@ -141,7 +141,7 @@ class SpProducer(object):
         if self.r.llen('follow_list') == 0:
             mylog.info('follow_list队列无值,等待添加中....')
             self.put_ip()
-        current_uk = self.r.blpop("follow_list", timeout=200)[1]
+        current_uk = (self.r.blpop("follow_list", timeout=100)[1])
         try:
             mylog.info('生产队列:follow_list:{0},followed_set:{1}'.format(self.r.llen('follow_list'), self.r.scard('followed_set')))
             follow_uks = yield self.getfollowlist(current_uk)
