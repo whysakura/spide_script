@@ -56,10 +56,10 @@ def get_spide(url,if_proxy=False):
                 yield put_ip()
             i = json.loads(r.blpop("proxy_ip_list", timeout=200)[1])
             httpconfigs = get_ip_http_config()
-            httpconfigs['proxy_host'] = i['proxy_host']
-            httpconfigs['proxy_port'] = i['proxy_port']
-            response = yield Spide(url, **httpconfigs).async_proxy()
-            # response = yield Spide(url, **httpconfigs).async()
+            # httpconfigs['proxy_host'] = i['proxy_host']
+            # httpconfigs['proxy_port'] = i['proxy_port']
+            # response = yield Spide(url, **httpconfigs).async_proxy()
+            response = yield Spide(url, **httpconfigs).async()
         except Exception as e:
             delete_list.append(i['proxy_host'])
             mylog.error(str(e))
@@ -81,6 +81,9 @@ def get_first_proxy_data(page_n=page_num,if_proxy=False):
                 soup = BeautifulSoup(response.body, 'lxml')
                 taglist = soup.find_all('tr', attrs={'class': re.compile("(odd)|()")})
                 mylog.info(taglist)
+                if not taglist:
+                    get_first_proxy_data()
+                    raise gen.Return()
                 for trtag in taglist:
                     tdlist = trtag.find_all('td')  # 在每个tr标签下,查找所有的td标签
                     proxies_list = {
