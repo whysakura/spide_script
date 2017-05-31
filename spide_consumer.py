@@ -2,6 +2,7 @@
 # @Time    : 2017/5/31 15:43
 # @Author  : wrd
 import json
+import random
 import time
 from multiprocessing import Pool
 
@@ -147,6 +148,7 @@ def main():
 
 
 if __name__ == '__main__':
+    time.sleep(random.randint(0, 99))
     mylog = Logger(consumer_logging_filename)
     mylog.info('获取分享数据开始....')
     p = Pool(consumer_process)
