@@ -141,7 +141,7 @@ class SpProducer(object):
         if self.r.llen('follow_list') == 0:
             mylog.info('follow_list队列无值,等待添加中....')
             self.put_ip()
-        current_uk = self.r.blpop("follow_list", timeout=0)[1]
+        current_uk = self.r.blpop("follow_list", timeout=200)[1]
         try:
             mylog.info('生产队列:follow_list:{0},followed_set:{1}'.format(self.r.llen('follow_list'), self.r.scard('followed_set')))
             follow_uks = yield self.getfollowlist(current_uk)
