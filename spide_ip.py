@@ -72,17 +72,17 @@ def get_spide(url,if_proxy=False):
 
 
 @gen.coroutine
-def get_first_proxy_data(page_n=page_num,if_proxy=False):
+def get_first_proxy_data(page_n=page_num,if_proxy=False,first_page=1):
     while True:
         try:
-            for i in range(1,page_n):
+            for i in range(first_page,page_n):
                 urls = first_url + str(i)
                 response = yield get_spide(urls,if_proxy=if_proxy)
                 soup = BeautifulSoup(response.body, 'lxml')
                 taglist = soup.find_all('tr', attrs={'class': re.compile("(odd)|()")})
                 if not taglist:
                     mylog.info('未获取到数据: '+str(taglist))
-                    get_first_proxy_data()
+                    get_first_proxy_data(first_page=i)
                     break
                 for trtag in taglist:
                     tdlist = trtag.find_all('td')  # 在每个tr标签下,查找所有的td标签
