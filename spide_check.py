@@ -56,7 +56,7 @@ class AsySpider(object):
                 if self.r.llen('proxy_check_ip_list') == 0:
                     insert_proxies(insert_lists)
                     insert_lists = []
-                    mylog.info('proxy_ip_list队列无值,等待添加中....')
+                    mylog.info('proxy_check_ip_list队列无值,等待添加中....')
                 i = json.loads(self.r.blpop("proxy_check_ip_list", timeout=100)[1])
                 httpconfigs = get_ip_http_config()
                 httpconfigs['proxy_host'] = i['proxy_host']
