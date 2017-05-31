@@ -83,7 +83,7 @@ def get_first_proxy_data(page_n=page_num,if_proxy=False):
                 if not taglist:
                     mylog.info('未获取到数据: '+str(taglist))
                     get_first_proxy_data()
-                    raise gen.Return()
+                    break
                 for trtag in taglist:
                     tdlist = trtag.find_all('td')  # 在每个tr标签下,查找所有的td标签
                     proxies_list = {
