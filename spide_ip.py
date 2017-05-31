@@ -80,8 +80,8 @@ def get_first_proxy_data(page_n=page_num,if_proxy=False):
                 response = yield get_spide(urls,if_proxy=if_proxy)
                 soup = BeautifulSoup(response.body, 'lxml')
                 taglist = soup.find_all('tr', attrs={'class': re.compile("(odd)|()")})
-                mylog.info(taglist)
                 if not taglist:
+                    mylog.info('未获取到数据: '+str(taglist))
                     get_first_proxy_data()
                     raise gen.Return()
                 for trtag in taglist:
