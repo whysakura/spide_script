@@ -109,7 +109,6 @@ class SpProducer(object):
             self.r.rpush("proxy_ip_list", json.dumps(i))
         mylog.info('向proxy_ip_list加数据')
 
-    @gen.coroutine
     def put_share_list(self):
         # 向队列里面添加数据
         sql = """SELECT uk FROM pt_db.spide_all_person p where p.share_nums !=0 order by share_nums desc; """
