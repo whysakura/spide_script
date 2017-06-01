@@ -21,10 +21,10 @@ class SpProducer(object):
     def add_most_person(self):
         ntime = time.time()
         last_time = self.r.get('if_add_time')
-        if not last_time:
+        if not last_time or last_time is None:
             self.r.set('if_add_time', str(ntime))
         else:
-            if ntime - int(last_time) > 86400:
+            if ntime - float(last_time) > 86400:
                 self.r.set('if_add_time', str(ntime))
                 # 向队列里面添加数据
                 sql = """SELECT uk FROM pt_db.spide_all_person p where p.share_nums !=0 order by share_nums desc limit 100; """
