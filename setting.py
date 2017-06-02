@@ -22,7 +22,7 @@ producer_process = 1
 producer_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'producer.log')
 # 消费之日志
 consumer_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'consumer.log')
-consumer_process = 3
+consumer_process = 2
 
 http_config = {
     "headers": {
@@ -69,7 +69,7 @@ third_url = 'http://www.httpdaili.com/mfdl/'
 ip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'ips.log')
 chkip_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'check_ips.log')
 page_num = 4 # 取5页
-sleep_tims = 800 # 睡眠300s
+sleep_tims = 1200 # 睡眠300s
 check_process = 3
 ip_http_config = {
     "headers": {
