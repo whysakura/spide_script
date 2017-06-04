@@ -140,6 +140,9 @@ class SpProducer(object):
                 self.add_most_person()
                 if self.r.llen('share_list') == 0:
                     mylog.info('share_list队列无值,等待添加中....')
+                    yanshi = random.randint(0, 360)
+                    mylog.info(yanshi)
+                    time.sleep(yanshi)
                     self.put_share_list()
                 mylog.info('消费队列:share_list:{0}'.format(self.r.llen('share_list')))
                 current_uk = (self.r.blpop("share_list", timeout=200)[1])
