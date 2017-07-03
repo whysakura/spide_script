@@ -86,9 +86,9 @@ class SpProducer(object):
         for _ in range(10):
             rlist = self.r.lrange("proxy_ip_list", 0, -1)
             try:
-                # if self.r.llen('proxy_ip_list') == 0:
-                #     self.put_ip()
-                #     mylog.info('proxy_ip_list队列无值,等待添加中....')
+                if self.r.llen('proxy_ip_list') == 0:
+                    self.put_ip()
+                    mylog.info('proxy_ip_list队列无值,等待添加中....')
                 i = json.loads(self.r.blpop("proxy_ip_list", timeout=0)[1])
                 httpconfigs = get_http_config()
                 httpconfigs['proxy_host'] = i['proxy_host']
