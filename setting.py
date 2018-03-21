@@ -5,7 +5,7 @@ import os
 
 import pymysql
 
-main_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'baidu.log')
+asgdmain_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'baidu.log')
 base_uk = 2164327417
 consume_sleeptime = 0
 product_sleeptime = 5
