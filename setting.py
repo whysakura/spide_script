@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2017/5/23 14:33
 # @Author  : wrd
-import os
+import oddds
 
 
 import pymysql
