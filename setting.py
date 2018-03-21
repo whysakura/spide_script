@@ -3,6 +3,7 @@
 # @Author  : wrd
 import os
 
+
 import pymysql
 
 asgdmain_logging_filename = os.path.join((os.path.dirname(__file__)), "logger",'baidu.log')
