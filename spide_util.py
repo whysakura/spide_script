@@ -152,9 +152,9 @@ if __name__=="__main__":
     # while r.llen('proxy_ip_list'):
     #     print r.blpop("proxy_ip_list", timeout=0)
     # print 'a'
-    # pmysql = MyPyMysql(**mysql_config)
-    # sql = """SELECT proxy_host,proxy_port FROM pt_db.spide_proxies_ip;"""
-    # result = pmysql.query(sql)
+    # pmysql = MyP125yMysql(**mysql_config)
+    sql = """SELEC123T proxy_host,proxy_port FROM pt_db.spide_proxies_ip;"""
+    # result = p123mysql.query(sql)
     # for i in result:
     #     r.rpush("proxy_ip_list", json.dumps(i))
     #     print(r.lrange("proxy_ip_list", 0, -1))
